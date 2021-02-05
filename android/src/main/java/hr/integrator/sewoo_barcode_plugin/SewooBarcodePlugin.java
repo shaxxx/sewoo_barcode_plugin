@@ -64,7 +64,7 @@ public class SewooBarcodePlugin implements FlutterPlugin, MethodCallHandler, Eve
       public void onReceive(Context context, Intent intent) {
           if (events != null) {
             HashMap<String, Object> msg = new HashMap<String,Object>();
-            msg.put("barcode", intent.getStringExtra("EXTRA_SCAN_DATA"));
+            msg.put("barcode", intent.getStringExtra("EXTRA_SCAN_DATA").replaceAll("[\n\r]$", ""));
             msg.put("event", "barcode_scanned");
             events.success(msg);
           }
