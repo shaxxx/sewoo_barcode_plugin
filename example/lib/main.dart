@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:sewoo_barcode_plugin/sewoo_barcode_plugin.dart';
+import 'package:sewoo_barcode_plugin/sewoo_barcode_plugin_method_channel.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,8 +16,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final SewooBarcodePlugin _sewooBarcodePlugin = SewooBarcodePlugin();
-  String _barcode;
-  StreamSubscription<String> _barcodeSubscription;
+  String _barcode = '';
+  late StreamSubscription<String> _barcodeSubscription;
 
   @override
   void initState() {
@@ -28,10 +28,10 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    String platformVersion;
+    String? platformVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      platformVersion = await SewooBarcodePlugin().platformVersion;
+      platformVersion = await SewooBarcodePlugin().getPlatformVersion();
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -42,7 +42,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _platformVersion = platformVersion;
+      _platformVersion = platformVersion ?? 'Unknown';
     });
   }
 
@@ -54,8 +54,9 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _barcodeSubscription =
-          _sewooBarcodePlugin.barcodeEventStream.listen((String barcode) async {
+      _barcodeSubscription = _sewooBarcodePlugin.barcodeEventStream.listen((
+        String barcode,
+      ) async {
         setState(() {
           _barcode = barcode;
           print(_barcode);
@@ -68,11 +69,9 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
+        appBar: AppBar(title: const Text('Plugin example app')),
         body: Center(
-          child: _barcode == null
+          child: _barcode.isEmpty
               ? Text('Running on: $_platformVersion\n')
               : Text("Barcode scanned $_barcode"),
         ),
@@ -83,8 +82,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     super.dispose();
-    if (_barcodeSubscription != null) {
-      _barcodeSubscription.cancel();
-    }
+    _barcodeSubscription.cancel();
   }
 }

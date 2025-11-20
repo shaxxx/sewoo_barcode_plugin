@@ -46,6 +46,11 @@ public class SewooBarcodePlugin implements FlutterPlugin, MethodCallHandler, Eve
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
+    } else if (call.method.equals("testBarcode")) {
+      Intent intent = new Intent(BARCODE_SCANNED_ACTION);
+      intent.putExtra("EXTRA_SCAN_DATA", "1111111111110");
+      applicationContext.sendBroadcast(intent);
+      result.success(null);
     } else {
       result.notImplemented();
     }
@@ -77,7 +82,11 @@ public class SewooBarcodePlugin implements FlutterPlugin, MethodCallHandler, Eve
     broadcastReceiver = createBarcodeScannedReceiver(events);
     IntentFilter filter = new IntentFilter();
     filter.addAction(BARCODE_SCANNED_ACTION);
-    applicationContext.registerReceiver(broadcastReceiver, filter);
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+      applicationContext.registerReceiver(broadcastReceiver, filter, Context.RECEIVER_EXPORTED);
+    } else {
+      applicationContext.registerReceiver(broadcastReceiver, filter);
+    }
   }
 
   @Override

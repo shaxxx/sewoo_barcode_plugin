@@ -1,4 +1,4 @@
-package hr.integrator.sewoo_barcode_plugin_example;
+package com.example.sewoo_barcode_plugin_example;
 
 import io.flutter.embedding.android.FlutterActivity;
 
